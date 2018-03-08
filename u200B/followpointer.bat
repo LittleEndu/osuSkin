@@ -1,0 +1,2 @@
+python followpointer.py
+pause
