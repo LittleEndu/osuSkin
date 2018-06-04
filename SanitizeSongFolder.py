@@ -1,3 +1,4 @@
+import ast
 import itertools
 import json
 import os
@@ -15,9 +16,9 @@ def main():
     dupes = dict()
     missings = set()
     for i in os.listdir("."):
-        if i[0] in "._":
-            continue
         song_id = "".join(itertools.takewhile(lambda a: a.isdigit(), i))
+        if not song_id:
+            continue
         if song_id:
             if song_id in ids:
                 # Structure: Dictionary of SongIDs with values of (Dictionary of filenames with values of booleans)
@@ -133,9 +134,14 @@ def get_osu_files(song_folder, osu_file):
             if line.startswith("AudioFilename: "):
                 audio = line[15:-1]
             if found_events:
-                if line.startswith("0,0"):
-                    background = "".join(itertools.takewhile(lambda a: a != '"', line[5:]))
-                    break
+                try:
+                    literal = ast.literal_eval(f"[{line}]")
+                    if all(isinstance(i, int) for i in literal[:2]):
+                        if isinstance(literal[2], str):
+                            background = literal[2]
+                            break
+                except:
+                    continue
             else:
                 if line == "[Events]\n":
                     found_events = True
